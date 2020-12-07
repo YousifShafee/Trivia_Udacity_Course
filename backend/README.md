@@ -72,21 +72,111 @@ This README is missing documentation of your endpoints. Below is an example for 
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions'
+POST '/questions/create'
+DELETE '/questions/<int:question_id>'
+POST '/questions/search'
+GET '/categories/<int:category_id>'
+POST '/quiz'
 
 GET '/categories'
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Fetches a dictionary of categories have a list of cotegories type.
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+- Returns: An object with a single key, categories, that contains a array of categories type (if there one category)
+        or return 404 exception. 
 
+"categories": [
+    "First thing",
+    "Second Categories",
+    "Third Categories"
+]
+
+GET '/questions'
+- Fetches a dictionary of categories, questions and number of questions
+- Request Arguments: None
+- Returns: An object with a three kies, categories which contains as GET '/categories', questions which a list 
+    of questions data and total_questions is the number of questions(if there one question)
+        or return 404 exception.  
+
+"categories": [
+    "Any thing",
+    "Second Categories",
+    "Third Categories"
+],
+"questions": [
+    {
+        "answer": "second answer",
+        "category": 1,
+        "difficulty": 2,
+        "id": 7,
+        "question": "second question"
+    }
+],
+"total_questions": 1
+
+POST '/questions/create'
+- Create new question and commit in database. 
+- Request Arguments: {'question': string, 'answer': string, 'difficulty': integer, 'category': integer}
+- Returns: An object with a single key success and the value is True (if there is no required missing)
+    or return 422 exception.
+{"success": True}
+
+DELETE '/questions/<int:question_id>'
+- Delete question by id and commit in database .
+- Request Arguments: None
+- Returns: An object with a single key success and the value is True (if nothing wrong)
+    or return 422 exception.
+{"success": True}
+
+POST '/questions/search'
+- Search in questions by substring of the question and return the question.
+- Request Arguments: {'searchTerm': string}
+- Returns: An object with a tow kies ,questions, contain list of question data ,number of questions (if nothing missing)
+    or return 404 exception.
+{"questions": [
+    {
+        "answer": "second answer",
+        "category": 1,
+        "difficulty": 2,
+        "id": 7,
+        "question": "second question"
+    }
+],
+"total_questions": 1
+}
+
+GET '/categories/<int:category_id>'
+- Fetch single category by id.
+- Request Arguments: None
+- Returns: An object with a three kies ,questions, contain list of question data ,number of questions and 
+    current category contain category type (if id valid) or return 404 exception.
+{
+"current_category": "First Category",
+"questions": [
+    {
+        "answer": "second answer",
+        "category": 1,
+        "difficulty": 2,
+        "id": 7,
+        "question": "second question"
+    }
+],
+    "total_questions": 1
+}
+
+POST '/quiz'
+- get 5 random questinos separately and without repeating when choose between all categories questions or one 
+    category questions.
+- Request Arguments: {'previous_questions': [], 'quiz_category': {'type': 'category_type', 'id': integer}}
+- Returns: An object with a single key ,question, contain question data (if stil questions in chosen category) 
+    or return 404 exception.
+{"question":
+    "answer": "second answer",
+    "category": 1,
+    "difficulty": 2,
+    "id": 7,
+    "question": "second question"
+}
 ```
 
 

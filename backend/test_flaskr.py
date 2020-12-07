@@ -28,13 +28,42 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
-    def test_get_questions(self):
+    def test_delete_question(self):
         """Test _____________ """
-        res = self.client().get('/questions')
+        last_id = Question.query.order_by(Question.id.desc()).first().id
+        res = self.client().delete('/questions/{0}'.format(last_id))
+        data = json.loads(res.data)
+        question = Question.query.get(last_id)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(question, None)
+
+    def test_create_question(self):
+        """Test _____________ """
+        res = self.client().post('/questions/create',
+                                 json={'question': "test new question", "answer": "created",
+                                       "category": 2, "difficulty": 4})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertTrue(data['total_questions'])
+        self.assertEqual(data['success'], True)
+
+    def test_question_search(self):
+        """Test _____________ """
+        res = self.client().post('/questions/search', json={'searchTerm': "test"})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['questions'])
         self.assertTrue(len(data['questions']))
+
+    def test_categories_by_id(self):
+        """Test _____________ """
+        first_id = Category.query.first().id
+        res = self.client().get('/categories/{0}'.format(first_id))
+        data = json.loads(res.data)
+        category = Category.query.get(first_id)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['total_questions'])
+        self.assertEqual(data['current_category'], category.format())
 
     def test_404_request(self):
         """Test _____________ """
@@ -43,10 +72,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['message'], 'Not found')
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
+    def test_422_request(self):
+        """Test _____________ """
+        res = self.client().delete('/questions/1000')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['message'], 'Un processable')
 
 
 # Make the tests conveniently executable

@@ -24,7 +24,7 @@ class Search extends Component {
           ref={input => this.search = input}
           onChange={this.handleInputChange}
         />
-        <input type="submit" value="Submit" name="search_term" className="button"/>
+        <input type="submit" value="Submit" name="search" className="button"/>
       </form>
     )
   }

@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import Column, String, Integer, create_engine
+from sqlalchemy import Column, String, Integer, create_engine, not_
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 

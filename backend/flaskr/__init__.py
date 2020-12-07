@@ -1,8 +1,9 @@
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 import random
+from sqlalchemy import not_
 import json
-from models import setup_db, Question, Category
+from models import setup_db, Question, Category, db
 
 QUESTIONS_PER_PAGE = 10
 
@@ -31,7 +32,7 @@ def create_app(test_config=None):
     @app.route('/categories')
     def get_categories():
         categories = Category.query.order_by('id').all()
-        result = [category.type for category in categories]
+        result = [category.format() for category in categories]
         if len(categories) == 0:
             abort(404)
         return jsonify({"categories": result})
@@ -56,11 +57,13 @@ def create_app(test_config=None):
             question.delete()
         except:
             abort(422)
+        return jsonify({"success": True})
 
     # Create Question
     @app.route('/questions/create', methods=['POST'])
     def create_questions():
         body = json.loads(request.get_data())
+        print(request.get_json())
         qus_question = body['question']
         qus_answer = body['answer']
         qus_category = body['category']
@@ -71,18 +74,19 @@ def create_app(test_config=None):
             question.insert()
         except:
             abort(422)
+        return jsonify({"success": True})
 
     # Search Method
-    @app.route('/questions', methods=['POST'])
+    @app.route('/questions/search', methods=['POST'])
     def search_questions():
-        content = request.args.get('search', "", type=str)
+        content = request.get_json()['searchTerm']
         if content == "":
             abort(404)
         else:
             search = '%{0}%'.format(content)
-            questions = Question.query.filter(Question.question.ilike(search))
-            data = [question.format() for question in questions]
-            return jsonify({"questions": data, "total_questions": len(data)})
+            data = Question.query.filter(Question.question.ilike(search))
+            questions = [question.format() for question in data]
+            return jsonify({"questions": questions, "total_questions": len(questions)})
 
     # Get Category By ID
     @app.route('/categories/<int:category_id>')
@@ -94,10 +98,21 @@ def create_app(test_config=None):
         return jsonify(
             {"current_category": categories.format(), "questions": questions, "total_questions": len(questions)})
 
-    # Get Random question For Quiz
+    # Get Random Question from category without repeated
     @app.route('/quiz', methods=['POST'])
     def get_quiz():
-        questions = Question.query.all()
+        data = request.get_json()
+        # get previous_questions in list
+        without = [Question.query.get(var_id) for var_id in data['previous_questions']]
+        if data['quiz_category']['type'] == 'click':
+            questions = Question.query.all()
+        else:
+            category = Category.query.get(data['quiz_category']['id'])
+            # get questions from specific category
+            questions = [question for question in category.question_id]
+        # for loop to remove previous_questions from return list
+        for sub_without in without:
+            questions.remove(sub_without)
         if len(questions) == 0:
             abort(404)
         return jsonify({"question": random.choice(questions).format()})
@@ -115,5 +130,12 @@ def create_app(test_config=None):
             "error": 422,
             "message": "Un processable"
         }), 422
+
+    @app.errorhandler(500)
+    def server(error):
+        return jsonify({
+            "error": 500,
+            "message": "Internal Server Error"
+        }), 500
 
     return app
