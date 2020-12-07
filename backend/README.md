@@ -117,16 +117,16 @@ GET '/questions'
 POST '/questions/create'
 - Create new question and commit in database. 
 - Request Arguments: {'question': string, 'answer': string, 'difficulty': integer, 'category': integer}
-- Returns: An object with a single key success and the value is True (if there is no required missing)
+- Returns: An object with a tow kies success and the value is True, question id (if there is no required missing)
     or return 422 exception.
-{"success": True}
+{"success": True, "question_id": question.id}
 
 DELETE '/questions/<int:question_id>'
 - Delete question by id and commit in database .
 - Request Arguments: None
-- Returns: An object with a single key success and the value is True (if nothing wrong)
+- Returns: An object with a tow kies success and the value is True, question id (if nothing wrong)
     or return 422 exception.
-{"success": True}
+{"success": True, "question_id": question.id}
 
 POST '/questions/search'
 - Search in questions by substring of the question and return the question.
@@ -176,6 +176,29 @@ POST '/quiz'
     "difficulty": 2,
     "id": 7,
     "question": "second question"
+}
+
+Errors Handle
+    404 -- Not found
+    422 -- Not processable
+    500 -- Internal Server Error
+
+404 Return 404 status code and
+{
+    "error": 404,
+    "message": "Not found"
+}
+
+422 Return 422 status code and
+{
+    "error": 422,
+    "message": "Un processable"
+}
+
+500 Return 500 status code and (Not Used In Code)
+{
+    "error": 500,
+    "message": "Internal Server Error"
 }
 ```
 

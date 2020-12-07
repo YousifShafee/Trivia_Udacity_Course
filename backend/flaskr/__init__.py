@@ -55,15 +55,14 @@ def create_app(test_config=None):
         question = Question.query.get(question_id)
         try:
             question.delete()
+            return jsonify({"success": True, "question_id": question_id})
         except:
             abort(422)
-        return jsonify({"success": True})
 
     # Create Question
     @app.route('/questions/create', methods=['POST'])
     def create_questions():
         body = json.loads(request.get_data())
-        print(request.get_json())
         qus_question = body['question']
         qus_answer = body['answer']
         qus_category = body['category']
@@ -72,9 +71,9 @@ def create_app(test_config=None):
             question = Question(question=qus_question, answer=qus_answer, category=qus_category,
                                 difficulty=qus_difficulty)
             question.insert()
+            return jsonify({"success": True, "question_id": question.id})
         except:
             abort(422)
-        return jsonify({"success": True})
 
     # Search Method
     @app.route('/questions/search', methods=['POST'])
@@ -103,16 +102,11 @@ def create_app(test_config=None):
     def get_quiz():
         data = request.get_json()
         # get previous_questions in list
-        without = [Question.query.get(var_id) for var_id in data['previous_questions']]
         if data['quiz_category']['type'] == 'click':
-            questions = Question.query.all()
+            questions = Question.query.filter(Question.id.notin_(data['previous_questions'])).all()
         else:
-            category = Category.query.get(data['quiz_category']['id'])
-            # get questions from specific category
-            questions = [question for question in category.question_id]
-        # for loop to remove previous_questions from return list
-        for sub_without in without:
-            questions.remove(sub_without)
+            questions = Question.query.filter(Question.category == data['quiz_category']['id'], Question.id
+                                              .notin_(data['previous_questions'])).all()
         if len(questions) == 0:
             abort(404)
         return jsonify({"question": random.choice(questions).format()})

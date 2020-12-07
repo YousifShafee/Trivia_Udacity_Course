@@ -28,6 +28,19 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['categories'])
+
+    def test_get_questions(self):
+        res = self.client().get('/questions')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(Question.query.count(), data['total_questions'])
+        self.assertTrue(data['questions'])
+
     def test_delete_question(self):
         """Test _____________ """
         last_id = Question.query.order_by(Question.id.desc()).first().id
@@ -36,6 +49,7 @@ class TriviaTestCase(unittest.TestCase):
         question = Question.query.get(last_id)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+        self.assertEqual(data['question_id'], last_id)
         self.assertEqual(question, None)
 
     def test_create_question(self):
@@ -46,6 +60,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+        self.assertTrue(data['question_id'])
 
     def test_question_search(self):
         """Test _____________ """
@@ -53,7 +68,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data['questions'])
-        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
 
     def test_categories_by_id(self):
         """Test _____________ """
@@ -62,8 +77,16 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         category = Category.query.get(first_id)
         self.assertEqual(res.status_code, 200)
-        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['questions'])
         self.assertEqual(data['current_category'], category.format())
+        self.assertEqual(data['total_questions'], len(category.question_id))
+
+    def test_quiz(self):
+        """Test _____________ """
+        res = self.client().post('/quiz', json={'previous_questions': [], 'quiz_category': {'type': 'click', 'id': 0}})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['question'])
 
     def test_404_request(self):
         """Test _____________ """
